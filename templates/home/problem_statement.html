@@ -1,0 +1,103 @@
+{% extends 'base.html' %} {% load static %} {% block css %}
+
+<style>
+  #editor {
+    position: absolute;
+    width: 66%;
+    height: 625px;
+    font-size: 17px;
+    text-align: left;  
+    padding: 0;
+  }
+  .card-text pre {
+    margin: 0; 
+    white-space: pre-wrap;  
+    font-size: 14px;  
+     
+}
+
+.line-number {
+    display: inline-block;
+    margin-right: 10px;  /* Adjust margin between line number and code */
+    color: #888;  /* Adjust line number color as needed */
+    text-align: left;
+    margin: 0;
+}
+</style>
+
+{% endblock %} {% block content %}
+
+<div class="container-fluid row">
+  <div class="col-4">
+    <h3>Problem Statement</h3>
+
+    <p>{{ problem_statement.problem_statement }}</p>
+  </div>
+
+  <div class="col-7 me-5">
+    {% if user.student %}
+
+    <form
+      method="post"
+      class="position-relative mt-3"
+      style="right: -150px"
+      action="{% url 'app:submit_solution' problem_statement.id %}"
+    >
+      {% csrf_token %}
+      <input type="hidden" class="solution" name="solution" />
+      <button
+        class="btn btn-primary position-absolute end-0"
+        onClick="Submit();"
+      >
+        Submit
+      </button>
+    </form>
+    <div class="mt-5" id="editor">#Enter your code here</div>
+
+    {% else %} {% if solutions %} {% for solution in solutions %}
+
+    
+    <div class="card text-bg-secondary mb-3">
+    <div class="card-header"><a href="/detail_solution/{{ solution.id }}" style="color:white; text-decoration:none;"> {{ solution.student }}<a></div>
+    
+    </div>
+    
+
+    {% endfor %} {% else %}
+
+    <div>No Solutions</div>
+
+    {% endif %} {% endif %}
+  </div>
+
+  {% endblock %} {% block js %}
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js"
+    integrity="sha512-gqjFRgajJiZM9GmvHEE7vpzPSL/moP+zxpl4F6lRNJDOI3pb2Tvu8k5vUjAzJKsl0ragzWL0/WasKhR430PkCw=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/mode-python.min.js"
+    integrity="sha512-DUdq0nHbbCHQMqQNALNivk5tAdpFWOpm3mplXDwBqIpXD6/vfgXp8fESbfsnePQT3jZKVI3mCbEQumz/S4IHPA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <script>
+    var editor = ace.edit("editor");
+    var PythonMode = ace.require("ace/mode/python").Mode;
+    editor.session.setMode(new PythonMode());
+
+    console.log(editor.getValue());
+
+    function Submit() {
+      const solution = document.querySelector(".solution");
+      solution.value = editor.getValue();
+      solution.parentNode.submit();
+    }
+  </script>
+
+  {% endblock %}
+</div>

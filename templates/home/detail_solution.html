@@ -1,0 +1,111 @@
+{% extends 'base.html' %} {% load static %} {% block css %}
+
+<style>
+  #editor {
+    position: absolute;
+    width: 66%;
+    height: 625px;
+    font-size: 17px;
+    text-align: left;  
+    padding: 0;
+  }
+  .card-text pre {
+    margin: 0; 
+    white-space: pre-wrap;  
+    font-size: 14px;  
+     
+}
+
+.line-number {
+    display: inline-block;
+    margin-right: 10px;  /* Adjust margin between line number and code */
+    color: #888;  /* Adjust line number color as needed */
+    text-align: left;
+    margin: 0;
+}
+</style>
+
+{% endblock %} {% block content %}
+
+<div class="container-fluid row">
+  <div class="col-4">
+    <h3>Problem Statement</h3>
+
+    <p>{{ problem_statement.problem_statement }}</p>
+  </div>
+
+  <div class="col-7 me-5">
+
+    
+    <div class="card text-bg-secondary mb-3">
+    <div class="card-header">Submitted by {{ solution.student }}</div>
+    <div class="card-body text-bg-dark">
+          <div class="card-body text-bg-light p-0 mb-2">
+                {% if solution.solution %}
+                    <pre class="card-text m-0 p-0 text-align-left">
+                        {% for line in solution.solution.splitlines %}
+                            <span class="line-number m-0 p-0">{{ forloop.counter }}</span> {{ line|linebreaksbr }}
+                        {% endfor %}
+                    </pre>
+                {% endif %}
+           </div>
+        {% if solution.feedback %}
+            <p class="card-text"><strong>Feedback:</strong> {{ solution.feedback|linebreaks }}</p>
+            <p class="card-text"><strong>Rating:</strong> {{ solution.rating }}</p>
+            <p class="card-text"><strong>Accuracy:</strong> {{ solution.accuracy }}</p>
+            
+        {% endif %}
+        <p class="card-text"><strong>Teacher Rating:</strong> {{ solution.teacher_rating }}</p>
+    </div>
+</div>
+    {% if user.teacher %}
+    <form method="post" action="{% url "app:teacher_rating" solution.id %}" class="position-relative mt-3">
+      {% csrf_token %}
+      <input type="integer" name="teacher_rating" />
+      <button type="submit" name="autograde_button" class="btn btn-success">Grade</button>
+      <br />
+    </form>
+    <form method="post" class="position-relative mt-3" action="{% url "app:autograde_solution" solution.id %}">
+      {% csrf_token %}
+      <br>
+      <button type="submit" name="autograde_button" class="btn btn-success mb-5"
+      {% if solution.teacher_rating %}
+      {% else %}
+        disabled
+      {% endif %}
+      >Autograde</button>
+  </form>
+  {% endif %}
+  </div>
+
+  {% endblock %} {% block js %}
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/ace.js"
+    integrity="sha512-gqjFRgajJiZM9GmvHEE7vpzPSL/moP+zxpl4F6lRNJDOI3pb2Tvu8k5vUjAzJKsl0ragzWL0/WasKhR430PkCw=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.6/mode-python.min.js"
+    integrity="sha512-DUdq0nHbbCHQMqQNALNivk5tAdpFWOpm3mplXDwBqIpXD6/vfgXp8fESbfsnePQT3jZKVI3mCbEQumz/S4IHPA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <script>
+    var editor = ace.edit("editor");
+    var PythonMode = ace.require("ace/mode/python").Mode;
+    editor.session.setMode(new PythonMode());
+
+    console.log(editor.getValue());
+
+    function Submit() {
+      const solution = document.querySelector(".solution");
+      solution.value = editor.getValue();
+      solution.parentNode.submit();
+    }
+  </script>
+
+  {% endblock %}
+</div>

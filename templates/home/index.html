@@ -1,0 +1,174 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="mt-5 mx-5">
+  <table class="table">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">
+          Problem Statements <span id="arrow0"></span>
+        </th>
+        <th onclick="sortTable(1)">Teacher <span id="arrow1"></span></th>
+      </tr>
+    </thead>
+
+    <tbody id="myTable">
+      {% if problem_statements %} {% for problem_statement in problem_statements %}
+
+      <tr>
+        <td class="text-underlined">
+          <a href="{% url 'app:problem_statement' problem_statement.id %}"
+            >{{ problem_statement.problem_statement }}
+          </a>
+        </td>
+        <td>{{ problem_statement.teacher }}</td>
+      </tr>
+
+      {% endfor %} {% else %}
+      <tr
+        class="text-center display-flex align-items-center justify-content-center"
+      >
+        <td colspan="6" class="text-center">No Problem Statements</td>
+      </tr>
+      {% endif %}
+    </tbody>
+    {% if user.teacher %}
+    <div>
+      <!-- Button trigger modal -->
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#staticBackdrop"
+      >
+        Add Problem Statement
+      </button>
+
+      <!-- Modal -->
+      <div
+        class="modal fade"
+        id="staticBackdrop"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabindex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="staticBackdropLabel">
+                Problem Statement
+              </h1>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form
+                method="post"
+                action="{% url 'app:create_problem_statement' %}"
+              >
+              {% csrf_token %}
+                <div class="mb-3">
+                  <label for="exampleFormControlTextarea1" class="form-label"
+                    >Problem Statement</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="exampleFormControlTextarea1"
+                    rows="3"
+                    name="problem_statement"
+                  ></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+              </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </table>
+</div>
+
+{% endblock %} {% block js %}
+
+<script>
+  $(document).ready(function () {
+    $("#myInput").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      $("#myTable tr").filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+      });
+    });
+  });
+
+  function sortTable(colIndex) {
+    var table,
+      rows,
+      switching,
+      i,
+      x,
+      y,
+      shouldSwitch,
+      dir,
+      switchcount = 0;
+    table = document.getElementById("myTable");
+    switching = true;
+    dir = "asc"; // Set the sorting direction to ascending by default
+
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 0; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("td")[colIndex];
+        y = rows[i + 1].getElementsByTagName("td")[colIndex];
+        if (dir === "asc") {
+          form;
+          if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        } else if (dir === "desc") {
+          if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else {
+        if (switchcount === 0 && dir === "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+
+    // Remove arrow indicators from all columns
+    for (var j = 0; j < table.rows[0].cells.length; j++) {
+      document.getElementById("arrow" + j).innerHTML = "";
+    }
+
+    // Set arrow indicator for the sorted column
+    document.getElementById("arrow" + colIndex).innerHTML =
+      dir === "asc" ? " &#9650;" : " &#9660;";
+  }
+</script>
+{% endblock %}
